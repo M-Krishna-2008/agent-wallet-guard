@@ -76,8 +76,11 @@ class Settings(BaseSettings):
         """
         Converts postgres:// or postgresql:// schemes to postgresql+psycopg://
         to ensure driver compatibility with psycopg v3.
+        Falls back to local SQLite when DATABASE_URL is empty/unset.
         """
         url = self.DATABASE_URL.strip()
+        if not url:
+            return "sqlite:///./guard.db"
         if url.startswith("postgres://"):
             return re.sub(r"^postgres://", "postgresql+psycopg://", url, count=1)
         elif url.startswith("postgresql://") and not url.startswith("postgresql+psycopg://"):
