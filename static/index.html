@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black text-[#f5f5f7] overflow-x-hidden w-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Wallet Guard — The Autonomous Spending Firewall</title>
+  
+  <!-- Inter Font as specified in place of SF Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas: '#000000',
+            charcoal: '#1d1d1f',
+            panel: '#161617',
+            edge: '#333336',
+            action: '#0071e3',
+            'action-hover': '#0077ed',
+            'luminous-blue': '#2997ff',
+            headline: '#f5f5f7',
+            secondary: '#86868b',
+            muted: '#6e6e73',
+            retail: '#f5f5f7',
+            danger: '#ff453a',
+            success: '#30d158',
+            warning: '#ff9f0a',
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          borderRadius: {
+            card: '28px',
+            pill: '980px',
+          },
+          letterSpacing: {
+            hero: '-0.015em',
+            chapter: '-0.015em',
+            lead: '0.011em',
+            button: '-0.022em',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #000000;
+      color: #f5f5f7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Focus visible per spec */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid #0071e3;
+      outline-offset: 3px;
+    }
+
+    /* Sculptural Lettering Typography */
+    .word-sculpture {
+      user-select: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-[#0071e3] selection:text-white overflow-x-hidden w-full">
+
+  <!-- ==========================================================================
+       TOP SANDBOX BANNER
+       ========================================================================== -->
+  <aside class="w-full bg-[#161617] border-b border-[#333336] py-2.5 px-4 text-center text-xs sm:text-[13px] text-[#86868b] tracking-wide flex items-center justify-center gap-2">
+    <span class="inline-block w-2 h-2 rounded-full bg-[#30d158] shadow-[0_0_8px_#30d158]"></span>
+    <span><strong>Sandbox mode.</strong> No real money moves.</span>
+  </aside>
+
+  <!-- ==========================================================================
+       HERO: SCULPTURAL PRODUCT OPENING (FIRST SCREEN)
+       ========================================================================== -->
+  <main class="w-full max-w-[1260px] mx-auto px-4 sm:px-8 lg:px-12 pt-6 pb-16 flex-1 flex flex-col justify-between overflow-x-hidden">
+    
+    <!-- Top brand orientation strip -->
+    <header class="flex items-center justify-between gap-4 py-2">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0071e3] to-[#2997ff] flex items-center justify-center shadow-[0_0_16px_rgba(0,113,227,0.5)] flex-shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <span class="text-xs font-semibold uppercase tracking-widest text-white whitespace-nowrap">Agent Wallet Guard</span>
+      </div>
+      <div class="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-[#86868b]">
+        <span class="hidden sm:inline">PayPal Sandbox Proxy</span>
+        <a href="/docs" class="text-[#2997ff] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] whitespace-nowrap">API Specs</a>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         HERO: VERTICALLY STACKED WORD SCULPTURE & PAYMENT-REQUEST CARD
+         Single centered flex column with 40px gap, no overlapping
+         ========================================================================== -->
+    <section class="my-8 sm:my-12 flex flex-col items-center gap-8 sm:gap-10 w-full" aria-label="Visual proof of spending firewall">
+      
+      <!-- 1. Dimensional Word Sculpture "GUARD" (Full visibility, centered on top) -->
+      <div class="relative w-full flex items-center justify-center overflow-hidden">
+        <!-- Soft blue ambient glow behind the sculpture -->
+        <div class="absolute w-full max-w-[500px] h-[160px] bg-gradient-to-r from-[#0071e3]/20 via-[#2997ff]/25 to-[#0071e3]/20 rounded-full blur-[70px] pointer-events-none -z-10" aria-hidden="true"></div>
+
+        <svg class="w-full max-w-[1100px] h-auto select-none word-sculpture block" style="width: min(90vw, 1100px); max-width: 100%; height: auto;" viewBox="0 0 1100 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- Silver vertical gradient -->
+            <linearGradient id="silver-face" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="28%" stop-color="#eeeeF2"/>
+              <stop offset="65%" stop-color="#86868b"/>
+              <stop offset="100%" stop-color="#242426"/>
+            </linearGradient>
+
+            <!-- Extrusion shadow gradient -->
+            <linearGradient id="extrude-body" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#3a3a3c"/>
+              <stop offset="100%" stop-color="#0a0a0c"/>
+            </linearGradient>
+
+            <!-- Restrained pale cyan rim light filter using feDropShadow for crisp rendering -->
+            <filter id="cyan-rim-light" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#2997ff" flood-opacity="0.35"/>
+            </filter>
+          </defs>
+
+          <!-- Extruded letter backing with downward offset -->
+          <text x="550" y="202" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="210" letter-spacing="-0.035em" fill="url(#extrude-body)" opacity="0.95">GUARD</text>
+          
+          <!-- Luminous silver front lettering with fine upper edge highlight -->
+          <text x="550" y="190" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="210" letter-spacing="-0.035em" fill="url(#silver-face)" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.45" filter="url(#cyan-rim-light)">GUARD</text>
+        </svg>
+      </div>
+
+      <!-- 2. Rendered Payment-Request Interface Plane (Directly BELOW the word sculpture) -->
+      <article class="w-full max-w-[520px] bg-[#161617]/95 backdrop-blur-xl border border-[#333336] rounded-card p-5 sm:p-7 shadow-[0_24px_50px_rgba(0,0,0,0.85)] transition-transform duration-300 hover:scale-[1.01]">
+        
+        <!-- Header row inside the card -->
+        <div class="flex items-center justify-between gap-2 mb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-6 h-6 rounded-full bg-[#ff453a]/15 border border-[#ff453a]/30 flex items-center justify-center text-[#ff453a] flex-shrink-0">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#86868b] whitespace-nowrap">Payment Intercepted</span>
+          </div>
+          <!-- Red BLOCKED Badge per spec -->
+          <span class="inline-flex items-center px-3 py-1 rounded-pill text-xs font-semibold bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30 flex-shrink-0">
+            BLOCKED
+          </span>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="mb-4">
+          <div class="text-[34px] sm:text-[40px] font-semibold tracking-tight text-white leading-none mb-1.5">$350.00 <span class="text-lg font-normal text-[#86868b]">USD</span></div>
+          <div class="text-[15px] sm:text-[16px] font-medium text-[#f5f5f7]">CryptoPay International</div>
+          <div class="text-xs text-[#86868b] mt-0.5 font-mono break-all sm:break-normal">payee: transfer@cryptopay-offshore.biz</div>
+        </div>
+
+        <!-- Security Intervention Summary -->
+        <div class="bg-[#1d1d1f] border border-[#333336] rounded-xl p-3.5 text-xs leading-relaxed text-[#f5f5f7] mb-4">
+          <strong class="text-[#ff453a] font-semibold">Firewall Violation:</strong> Amount exceeds hard limit ($300.00) and category &lsquo;crypto&rsquo; is strictly blocked by policy.
+        </div>
+
+        <!-- Cryptographic metadata footer inside card -->
+        <div class="flex items-center justify-between text-[11px] text-[#86868b] pt-2.5 border-t border-[#333336]">
+          <span class="font-mono">agent-7 &bull; #req-9041</span>
+          <span class="flex items-center gap-1.5 text-[#30d158] font-medium">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            Audit Chained
+          </span>
+        </div>
+      </article>
+    </section>
+
+    <!-- Lower Opening Screen Lockup: Product Name + 80px Promise (Left) & Platter Action (Right) -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 pt-8 pb-12 border-b border-[#1d1d1f]">
+      <!-- Lower-left: 32px product name above 80px promise -->
+      <div class="max-w-[760px]">
+        <div class="text-[26px] sm:text-[32px] leading-[1.125] font-semibold text-[#86868b] tracking-[0.004em] mb-2">
+          Agent Wallet Guard
+        </div>
+        <h1 class="text-[36px] sm:text-[56px] lg:text-[80px] leading-[1.05] font-semibold text-white tracking-hero break-words">
+          Spend with certainty.
+        </h1>
+      </div>
+
+      <!-- Lower-right: Platter with one blue pill "Open dashboard" linking to /app -->
+      <div class="flex flex-col sm:flex-row items-start md:items-end gap-3 flex-shrink-0">
+        <div class="bg-[#161617] p-2 rounded-pill border border-[#333336]">
+          <a href="/app" class="inline-flex items-center justify-center bg-[#0071e3] hover:bg-[#0077ed] text-white text-[17px] font-normal leading-[1.176] tracking-button h-[44px] px-[21px] rounded-pill border border-transparent transition-all shadow-[0_0_20px_rgba(0,113,227,0.35)] hover:shadow-[0_0_28px_rgba(0,113,227,0.55)]">
+            Open dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==========================================================================
+       THREE CHAPTERS (Rules / AI risk check / Human in the loop)
+       Using Chapter Lockup and Proof Tiles (One claim per tile) per spec
+       ========================================================================== -->
+  <section class="w-full bg-[#1d1d1f] py-20 px-4 sm:px-12 border-t border-[#333336]">
+    <div class="max-w-[1260px] mx-auto space-y-24">
+
+      <!-- CHAPTER 1: RULES -->
+      <article class="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 items-center">
+        <!-- Chapter Lockup (Left) -->
+        <div class="lg:col-span-7">
+          <p class="text-[19px] sm:text-[21px] font-semibold text-[#0071e3] tracking-[0.011em] mb-3 sm:mb-4">
+            Deterministic Rules
+          </p>
+          <h2 class="text-[32px] sm:text-[48px] lg:text-[56px] leading-[1.08] font-semibold text-white tracking-chapter mb-4 sm:mb-5">
+            Policy before execution.
+          </h2>
+          <p class="text-[17px] sm:text-[21px] leading-[1.381] text-[#86868b] tracking-lead max-w-[640px]">
+            Every payment request hits strict mathematical boundaries first. <span class="text-white">Velocity limits, vendor allowlists, and hard ceilings</span> enforce discipline before a single dollar is touched.
+          </p>
+        </div>
+        <!-- Proof Tile (Right, 28px radius) -->
+        <div class="lg:col-span-5 bg-black border border-[#333336] rounded-card p-6 sm:p-10 h-[220px] sm:h-[260px] flex flex-col justify-center items-center text-center">
+          <span class="text-[44px] sm:text-[56px] leading-none font-semibold text-white tracking-chapter mb-3">$50.00</span>
+          <p class="text-[14px] sm:text-[17px] text-[#86868b] max-w-[280px]">Autonomous auto-approve limit. Larger spends demand human consent.</p>
+        </div>
+      </article>
+
+      <!-- CHAPTER 2: AI RISK CHECK -->
+      <article class="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 items-center">
+        <!-- Chapter Lockup (Left) -->
+        <div class="lg:col-span-7">
+          <p class="text-[19px] sm:text-[21px] font-semibold text-[#2997ff] tracking-[0.011em] mb-3 sm:mb-4">
+            AI Risk Reviewer
+          </p>
+          <h2 class="text-[32px] sm:text-[48px] lg:text-[56px] leading-[1.08] font-semibold text-white tracking-chapter mb-4 sm:mb-5">
+            Context that cannot be tricked.
+          </h2>
+          <p class="text-[17px] sm:text-[21px] leading-[1.381] text-[#86868b] tracking-lead max-w-[640px]">
+            Uncompromised neural reasoning compares proposed charges against the user&rsquo;s declared goals. <span class="text-white">Third-party web pages and descriptions are treated as hostile text</span>, isolating injection attacks instantly.
+          </p>
+        </div>
+        <!-- Proof Tile (Right, 28px radius) -->
+        <div class="lg:col-span-5 bg-black border border-[#333336] rounded-card p-6 sm:p-10 h-[220px] sm:h-[260px] flex flex-col justify-center items-center text-center">
+          <span class="text-[44px] sm:text-[56px] leading-none font-semibold text-[#30d158] tracking-chapter mb-3">0 ms</span>
+          <p class="text-[14px] sm:text-[17px] text-[#86868b] max-w-[280px]">Pre-check keyword scanner blocks hostile injection before token invocation.</p>
+        </div>
+      </article>
+
+      <!-- CHAPTER 3: HUMAN IN THE LOOP -->
+      <article class="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 items-center">
+        <!-- Chapter Lockup (Left) -->
+        <div class="lg:col-span-7">
+          <p class="text-[19px] sm:text-[21px] font-semibold text-[#ff9f0a] tracking-[0.011em] mb-3 sm:mb-4">
+            Human in the Loop
+          </p>
+          <h2 class="text-[32px] sm:text-[48px] lg:text-[56px] leading-[1.08] font-semibold text-white tracking-chapter mb-4 sm:mb-5">
+            Escalation without disruption.
+          </h2>
+          <p class="text-[17px] sm:text-[21px] leading-[1.381] text-[#86868b] tracking-lead max-w-[640px]">
+            Ambiguous tasks, unusual vendors, or network drops pause safely in your escalation queue. <span class="text-white">One tap releases real PayPal sandbox payouts</span> with cryptographic hash auditing.
+          </p>
+        </div>
+        <!-- Proof Tile (Right, 28px radius) -->
+        <div class="lg:col-span-5 bg-black border border-[#333336] rounded-card p-6 sm:p-10 h-[220px] sm:h-[260px] flex flex-col justify-center items-center text-center">
+          <span class="text-[44px] sm:text-[56px] leading-none font-semibold text-white tracking-chapter mb-3">100%</span>
+          <p class="text-[14px] sm:text-[17px] text-[#86868b] max-w-[280px]">Tamper-evident SHA-256 hash chaining on every agent payment event.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="w-full bg-[#161617] border-t border-[#333336] py-10 px-4 sm:px-12 text-xs text-[#86868b]">
+    <div class="max-w-[1260px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+        <span class="text-[#f5f5f7] font-semibold">Agent Wallet Guard</span>
+        <span class="hidden sm:inline">&bull;</span>
+        <span class="break-words">Python 3.11 &bull; FastAPI &bull; SQLModel &bull; PayPal Sandbox &bull; Gemini</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <a href="/app" class="text-[#2997ff] hover:underline">Launch Dashboard</a>
+        <a href="/docs" class="text-[#2997ff] hover:underline">Interactive API Docs</a>
+        <a href="/health" class="text-[#2997ff] hover:underline">Health Check</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

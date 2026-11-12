@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-[#1d1d1f] text-[#f5f5f7]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Wallet Guard — Security Operations Dashboard</title>
+
+  <!-- Inter Font as specified in place of SF Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas: '#000000',
+            charcoal: '#1d1d1f',
+            panel: '#161617',
+            edge: '#333336',
+            action: '#0071e3',
+            'action-hover': '#0077ed',
+            'luminous-blue': '#2997ff',
+            headline: '#f5f5f7',
+            secondary: '#86868b',
+            muted: '#6e6e73',
+            retail: '#f5f5f7',
+            danger: '#ff453a',
+            success: '#30d158',
+            warning: '#ff9f0a',
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          borderRadius: {
+            card: '28px',
+            pill: '980px',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- AG Grid Community CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-grid.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-theme-alpine.css">
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #1d1d1f;
+      color: #f5f5f7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Focus visible per spec */
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 2px solid #0071e3;
+      outline-offset: 3px;
+    }
+
+    /* Floating Glass Navigation */
+    .glass-nav {
+      background: rgba(18, 18, 18, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid #333336;
+      border-radius: 18px;
+    }
+
+    /* Card entry animation */
+    .animate-card-in {
+      animation: slideIn 0.3s cubic-bezier(0, 0, 0.2, 1);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Custom Toast Container */
+    #toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-msg {
+      background: #161617;
+      border: 1px solid #333336;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 980px;
+      font-size: 13px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+      animation: toastAnim 0.2s ease-out;
+    }
+    @keyframes toastAnim {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Light Theme AG Grid Overrides */
+    .ag-theme-alpine {
+      --ag-background-color: #ffffff;
+      --ag-header-background-color: #fafafc;
+      --ag-odd-row-background-color: #ffffff;
+      --ag-header-foreground-color: #6e6e73;
+      --ag-foreground-color: #1d1d1f;
+      --ag-border-color: #d2d2d7;
+      --ag-font-family: 'Inter', sans-serif;
+      --ag-font-size: 13px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-[#0071e3] selection:text-white">
+
+  <!-- ==========================================================================
+       FLOATING GLASS NAVIGATION
+       ========================================================================== -->
+  <header class="sticky top-4 z-50 max-w-[1260px] mx-auto w-full px-4 sm:px-8">
+    <div class="glass-nav h-[56px] px-6 flex items-center justify-between shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+      
+      <!-- Brand & Status Dot -->
+      <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-2.5 text-white font-semibold text-[17px] tracking-tight hover:opacity-90">
+          <div class="w-6 h-6 rounded-md bg-gradient-to-br from-[#0071e3] to-[#2997ff] flex items-center justify-center">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <span>Agent Wallet Guard</span>
+        </a>
+
+        <!-- Live status dot -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-black/40 rounded-pill border border-[#333336] text-xs font-medium text-[#86868b]">
+          <span class="w-2 h-2 rounded-full bg-[#30d158] shadow-[0_0_8px_#30d158]"></span>
+          <span id="nav-status-label">Active &bull; Polling 2s</span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="flex items-center gap-4 text-sm">
+        <a href="/" class="text-[#86868b] hover:text-white transition-colors flex items-center gap-1.5 font-medium">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Overview
+        </a>
+        <a href="/docs" target="_blank" class="text-[#2997ff] hover:underline font-medium">
+          API Specs
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MAIN DASHBOARD WORKSPACE (CHARCOAL STAGE)
+       Responsive: Two columns on desktop (>1068px), stacks under 1068px
+       ========================================================================== -->
+  <main class="w-full max-w-[1260px] mx-auto px-4 sm:px-8 pt-8 pb-16 flex-1">
+    
+    <!-- PHASE 5 CONTAINER: "Run demo" row of three buttons -->
+    <div id="demo-controls-container" class="w-full mb-8 bg-[#161617] border border-[#333336] rounded-card p-5 sm:p-6 shadow-[0_12px_28px_rgba(0,0,0,0.35)]">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#2997ff]">Interactive Simulator</span>
+            <span class="px-2 py-0.5 rounded-pill text-[10px] font-bold bg-[#0071e3]/20 text-[#2997ff] border border-[#0071e3]/40">DEMO MODE</span>
+          </div>
+          <h2 class="text-lg font-semibold text-white tracking-tight mt-0.5">Run Autonomous Shopping Agent</h2>
+          <p class="text-xs text-[#86868b]">Dispatch autonomous shopping agents to live store pages to test Guard's spending firewall.</p>
+        </div>
+        <button onclick="resetDemo()" class="text-xs text-[#86868b] hover:text-[#ff453a] border border-[#333336] hover:border-[#ff453a]/40 bg-[#1d1d1f] hover:bg-[#ff453a]/10 px-3.5 py-1.5 rounded-pill transition-all font-medium flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Reset Demo
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Button 1: Normal -->
+        <button onclick="runDemoScenario('normal')" class="flex items-center justify-between p-3.5 rounded-2xl bg-[#1d1d1f] border border-[#333336] hover:border-[#30d158]/50 hover:bg-[#30d158]/5 transition-all text-left group">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#30d158] shadow-[0_0_8px_#30d158]"></span>
+            <div>
+              <div class="text-xs font-semibold text-white group-hover:text-[#30d158] transition-colors">Buy a $20 phone case</div>
+              <div class="text-[11px] text-[#86868b]">Under $50 limit &bull; Auto-APPROVE</div>
+            </div>
+          </div>
+          <span class="text-xs text-[#86868b] group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+        </button>
+
+        <!-- Button 2: Mid -->
+        <button onclick="runDemoScenario('mid')" class="flex items-center justify-between p-3.5 rounded-2xl bg-[#1d1d1f] border border-[#333336] hover:border-[#ff9f0a]/50 hover:bg-[#ff9f0a]/5 transition-all text-left group">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#ff9f0a] shadow-[0_0_8px_#ff9f0a]"></span>
+            <div>
+              <div class="text-xs font-semibold text-white group-hover:text-[#ff9f0a] transition-colors">Buy $150 headphones</div>
+              <div class="text-[11px] text-[#86868b]">Over $50 limit &bull; ESCALATE</div>
+            </div>
+          </div>
+          <span class="text-xs text-[#86868b] group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+        </button>
+
+        <!-- Button 3: Evil -->
+        <button onclick="runDemoScenario('evil')" class="flex items-center justify-between p-3.5 rounded-2xl bg-[#1d1d1f] border border-[#333336] hover:border-[#ff453a]/50 hover:bg-[#ff453a]/5 transition-all text-left group">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#ff453a] shadow-[0_0_8px_#ff453a]"></span>
+            <div>
+              <div class="text-xs font-semibold text-white group-hover:text-[#ff453a] transition-colors">Shop on a compromised page</div>
+              <div class="text-[11px] text-[#86868b]">Prompt injection &bull; BLOCK</div>
+            </div>
+          </div>
+          <span class="text-xs text-[#86868b] group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Responsive Grid: Stacks under 1068px (using lg: breakpoint) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- ====================================================================
+           LEFT COLUMN: REQUESTS FEED (lg:col-span-7 or 8)
+           ==================================================================== -->
+      <section class="lg:col-span-7 flex flex-col gap-6" aria-labelledby="feed-heading">
+        <div class="flex items-center justify-between pb-2 border-b border-[#333336]">
+          <div>
+            <h2 id="feed-heading" class="text-2xl font-semibold text-white tracking-tight">Payment Requests Feed</h2>
+            <p class="text-xs text-[#86868b] mt-0.5">Real-time spending decisions & policy evaluations</p>
+          </div>
+          <span id="feed-count-badge" class="px-3 py-1 rounded-pill bg-[#161617] border border-[#333336] text-xs font-semibold text-[#86868b]">
+            Loading...
+          </span>
+        </div>
+
+        <!-- Cards Container -->
+        <div id="requests-feed-container" class="flex flex-col gap-5">
+          <!-- Loading Skeleton -->
+          <div class="bg-[#161617] border border-[#333336] rounded-card p-6 animate-pulse space-y-4">
+            <div class="h-6 bg-[#242426] rounded-md w-1/3"></div>
+            <div class="h-4 bg-[#242426] rounded-md w-2/3"></div>
+            <div class="h-10 bg-[#242426] rounded-md w-full"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           RIGHT COLUMN: BUDGET METER + RULES EDITOR (lg:col-span-5)
+           ==================================================================== -->
+      <aside class="lg:col-span-5 flex flex-col gap-6" aria-label="Controls and limits">
+        
+        <!-- 1. BUDGET METER PROOF TILE -->
+        <article class="bg-black border border-[#333336] rounded-card p-7 flex flex-col justify-between shadow-[0_16px_36px_rgba(0,0,0,0.4)]">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#86868b]">Rolling 7-Day Budget</span>
+            <span id="budget-status-pill" class="text-xs font-medium text-[#30d158] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#30d158]"></span> Active
+            </span>
+          </div>
+
+          <!-- Big $130 / $200 figure from GET /budget -->
+          <div class="mb-4">
+            <div class="flex items-baseline gap-2">
+              <span id="budget-figure-spent" class="text-[44px] font-semibold text-white tracking-chapter leading-none">$0.00</span>
+              <span class="text-[24px] text-[#86868b] font-normal">/</span>
+              <span id="budget-figure-total" class="text-[28px] text-[#86868b] font-medium leading-none">$200.00</span>
+            </div>
+            <div id="budget-remaining-text" class="text-xs text-[#86868b] mt-2">
+              $200.00 remaining in rolling window
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full h-2.5 bg-[#242426] rounded-pill overflow-hidden mt-1 mb-2">
+            <div id="budget-progress-bar" class="h-full bg-gradient-to-r from-[#0071e3] to-[#30d158] rounded-pill transition-all duration-500 w-0"></div>
+          </div>
+          <div class="text-[11px] text-[#6e6e73]">
+            Counts approved and paid transactions over the past 7 days.
+          </div>
+        </article>
+
+        <!-- 2. RULES & SPENDING LIMITS EDITOR -->
+        <article class="bg-[#161617] border border-[#333336] rounded-card p-7 shadow-[0_16px_36px_rgba(0,0,0,0.4)]">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-lg font-semibold text-white">Policy Rules</h3>
+              <p class="text-xs text-[#86868b]">Deterministic spending bounds</p>
+            </div>
+            <button id="btn-save-rules" class="bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-medium h-[36px] px-4 rounded-pill border border-transparent transition-all shadow-[0_0_12px_rgba(0,113,227,0.3)]">
+              Save changes
+            </button>
+          </div>
+
+          <form id="rules-form" class="space-y-4">
+            <!-- Per-Transaction Auto Limit -->
+            <div>
+              <label for="rule-auto-limit" class="block text-xs font-semibold text-[#f5f5f7] mb-1">
+                Per-Transaction Auto Limit ($)
+              </label>
+              <input type="number" step="0.01" min="0" id="rule-auto-limit" class="w-full bg-[#1d1d1f] border border-[#333336] rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+              <span class="text-[11px] text-[#86868b]">Spends exceeding this trigger ESCALATE for human sign-off.</span>
+            </div>
+
+            <!-- Hard Block Limit -->
+            <div>
+              <label for="rule-hard-block" class="block text-xs font-semibold text-[#f5f5f7] mb-1">
+                Hard Block Limit ($)
+              </label>
+              <input type="number" step="0.01" min="0" id="rule-hard-block" class="w-full bg-[#1d1d1f] border border-[#333336] rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+              <span class="text-[11px] text-[#86868b]">Spends exceeding this are automatically BLOCKED.</span>
+            </div>
+
+            <!-- Weekly Budget -->
+            <div>
+              <label for="rule-weekly-budget" class="block text-xs font-semibold text-[#f5f5f7] mb-1">
+                Weekly Budget ($)
+              </label>
+              <input type="number" step="0.01" min="0" id="rule-weekly-budget" class="w-full bg-[#1d1d1f] border border-[#333336] rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+              <span class="text-[11px] text-[#86868b]">Rolling 7-day spending ceiling.</span>
+            </div>
+
+            <!-- Allowed Categories as Toggles -->
+            <div class="pt-2">
+              <label class="block text-xs font-semibold text-[#f5f5f7] mb-2">
+                Allowed Categories
+              </label>
+              <div class="flex flex-wrap gap-2" id="allowed-categories-container">
+                <!-- Dynamic Category Toggles -->
+              </div>
+            </div>
+
+            <!-- Payee Allowlist as Tag List -->
+            <div class="pt-2">
+              <label for="rule-payees-input" class="block text-xs font-semibold text-[#f5f5f7] mb-1">
+                Payee Allowlist (Comma-separated)
+              </label>
+              <textarea id="rule-payees-input" rows="2" class="w-full bg-[#1d1d1f] border border-[#333336] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#0071e3] font-mono"></textarea>
+              <span class="text-[11px] text-[#86868b]">Spends to payees outside this list above $0.00 are blocked.</span>
+            </div>
+          </form>
+        </article>
+
+        <!-- ====================================================================
+             PAYPAL MCP TOOLS PANEL (READ-ONLY TOOL DISCOVERY)
+             ==================================================================== -->
+        <article class="bg-[#161617] border border-[#333336] rounded-card p-6 shadow-xl">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-lg font-semibold text-white">PayPal Tools</h3>
+                <span id="mcp-count-chip" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#0071e3]/20 text-[#2997ff] border border-[#0071e3]/30">0</span>
+              </div>
+              <p class="text-xs text-[#86868b]">Model Context Protocol (MCP) Tools</p>
+            </div>
+            <div id="mcp-status-pill" class="flex items-center gap-1.5 px-3 py-1 rounded-pill bg-[#1d1d1f] border border-[#333336] text-[11px] text-[#86868b]">
+              <span class="w-2 h-2 rounded-full bg-[#86868b]"></span>
+              <span id="mcp-status-text">Connecting...</span>
+            </div>
+          </div>
+
+          <p class="text-xs text-[#86868b] leading-relaxed mb-4">
+            Discovered from the sandbox remote MCP server (<code class="font-mono text-[#f5f5f7]">/sse</code>). Agents can execute read queries and invoice/order drafts through MCP, while disbursements are strictly enforced by Guard.
+          </p>
+
+          <!-- Search filter for tools -->
+          <div class="mb-3">
+            <input type="text" id="mcp-search-input" placeholder="Filter MCP tools by name or description..." class="w-full bg-[#1d1d1f] border border-[#333336] rounded-xl px-3 py-1.5 text-xs text-white placeholder-[#86868b] focus:outline-none focus:border-[#0071e3]">
+          </div>
+
+          <!-- Scrollable Tools List -->
+          <div id="mcp-tools-list" class="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+            <div class="p-4 text-center text-xs text-[#86868b] bg-[#1d1d1f] rounded-xl border border-[#333336]">
+              Loading MCP tools...
+            </div>
+          </div>
+        </article>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- ==========================================================================
+       BOTTOM CHAPTER: LIGHT #f5f5f7 BAND (AUDIT LOG & CHAIN VERIFICATION)
+       Per spec: The dark story opens into an extended light tail
+       ========================================================================== -->
+  <section class="w-full bg-[#f5f5f7] text-[#1d1d1f] py-14 px-4 sm:px-8 border-t border-[#d2d2d7]">
+    <div class="max-w-[1260px] mx-auto">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-[#6e6e73]">Tamper-Evident Security</span>
+          <h2 class="text-3xl font-semibold tracking-tight text-[#1d1d1f]">Cryptographic Audit Ledger</h2>
+        </div>
+
+        <!-- "Chain verified" Indicator from GET /audit/verify (Green check or Red warning) -->
+        <div id="chain-verify-badge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-pill bg-white border border-[#d2d2d7] text-xs font-semibold shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-[#30d158]"></span>
+          <span>Checking audit chain...</span>
+        </div>
+      </div>
+
+      <!-- Filter Row -->
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <div class="flex items-center gap-2 flex-1 max-w-sm">
+          <input type="text" id="audit-filter-input" placeholder="Filter by Request ID or Event..." class="w-full bg-white border border-[#d2d2d7] rounded-lg px-3 py-1.5 text-xs text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]">
+        </div>
+        <button id="btn-reverify-audit" class="text-xs text-[#0066cc] hover:underline font-medium">
+          Verify Hash Chain Now
+        </button>
+      </div>
+
+      <!-- AG Grid Container -->
+      <div class="w-full bg-white border border-[#d2d2d7] rounded-2xl overflow-hidden shadow-sm">
+        <div id="audit-grid" class="ag-theme-alpine w-full h-[360px]"></div>
+      </div>
+
+      <p class="text-[11px] text-[#6e6e73] mt-3">
+        Each entry is permanently sealed using <code class="font-mono text-xs">hash = sha256(prev_hash + canonical_json)</code>. Any database tampering immediately breaks the chain.
+      </p>
+
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       TOAST NOTIFICATION BOX
+       ========================================================================== -->
+  <div id="toast-box"></div>
+
+  <!-- ==========================================================================
+       CLIENT APPLICATION SCRIPT (VANILLA JS)
+       ========================================================================== -->
+  <script>
+    // State
+    let requestsData = [];
+    let rulesData = null;
+    let budgetData = null;
+    let auditData = [];
+    let auditGridApi = null;
+    let isSavingRules = false;
+
+    // Available categories dictionary
+    const STANDARD_CATEGORIES = [
+      'groceries', 'electronics', 'books', 'software', 'office', 'travel', 'crypto', 'gambling'
+    ];
+
+    // Initialize Toast
+    function showToast(message, isError = false) {
+      const box = document.getElementById('toast-box');
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${isError ? 'bg-[#ff453a]' : 'bg-[#30d158]'}"></span>
+        <span>${message}</span>
+      `;
+      box.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // 1. Fetch Budget
+    async function loadBudget() {
+      try {
+        const res = await fetch('/api/v1/budget');
+        if (!res.ok) return;
+        budgetData = await res.json();
+        
+        const spent = parseFloat(budgetData.spent_this_week || 0);
+        const total = parseFloat(budgetData.weekly_budget || 200);
+        const remaining = parseFloat(budgetData.remaining || (total - spent));
+        
+        document.getElementById('budget-figure-spent').textContent = `$${spent.toFixed(2)}`;
+        document.getElementById('budget-figure-total').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('budget-remaining-text').textContent = `$${remaining.toFixed(2)} remaining in rolling window`;
+        
+        const pct = Math.min(100, Math.max(0, (spent / total) * 100));
+        const bar = document.getElementById('budget-progress-bar');
+        bar.style.width = `${pct}%`;
+        if (pct >= 85) {
+          bar.className = 'h-full bg-gradient-to-r from-[#ff9f0a] to-[#ff453a] rounded-pill transition-all duration-500';
+        } else {
+          bar.className = 'h-full bg-gradient-to-r from-[#0071e3] to-[#30d158] rounded-pill transition-all duration-500';
+        }
+      } catch (err) {
+        console.error('Failed to load budget:', err);
+      }
+    }
+
+    // 2. Fetch Requests
+    async function loadRequests() {
+      try {
+        const res = await fetch('/api/v1/requests');
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        
+        // Detect if list changed
+        const isChanged = JSON.stringify(data) !== JSON.stringify(requestsData);
+        if (isChanged) {
+          requestsData = data;
+          renderRequestsFeed();
+        }
+      } catch (err) {
+        console.error('Failed to load requests:', err);
+      }
+    }
+
+    // Render Requests Feed
+    function renderRequestsFeed() {
+      const container = document.getElementById('requests-feed-container');
+      const badge = document.getElementById('feed-count-badge');
+      badge.textContent = `${requestsData.length} total`;
+
+      if (!requestsData || requestsData.length === 0) {
+        container.innerHTML = `
+          <div class="bg-[#161617] border border-[#333336] rounded-card p-10 text-center text-[#86868b]">
+            <div class="text-4xl mb-3">🛡️</div>
+            <div class="text-base font-medium text-white mb-1">No payment requests yet</div>
+            <p class="text-xs">Agents submitting transactions via the API will appear here in real time.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      requestsData.forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'bg-[#161617] border border-[#333336] rounded-card p-5 sm:p-7 shadow-[0_12px_28px_rgba(0,0,0,0.35)] animate-card-in flex flex-col gap-4';
+        card.id = `request-card-${item.id}`;
+
+        // Decision Badge styling
+        let decisionBadge = '';
+        if (item.decision === 'APPROVE') {
+          decisionBadge = `<span class="px-2.5 py-0.5 rounded-pill text-xs font-semibold bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30">APPROVE</span>`;
+        } else if (item.decision === 'BLOCK') {
+          decisionBadge = `<span class="px-2.5 py-0.5 rounded-pill text-xs font-semibold bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30">BLOCK</span>`;
+        } else {
+          decisionBadge = `<span class="px-2.5 py-0.5 rounded-pill text-xs font-semibold bg-[#ff9f0a]/15 text-[#ff9f0a] border border-[#ff9f0a]/30">ESCALATE</span>`;
+        }
+
+        // Status Chip styling
+        let statusChip = '';
+        if (item.status === 'PAID') {
+          statusChip = `<span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30">PAID</span>`;
+        } else if (item.status === 'PAYMENT_FAILED') {
+          statusChip = `<span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30">PAYMENT_FAILED</span>`;
+        } else if (item.status === 'APPROVED') {
+          statusChip = `<span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-[#0071e3]/15 text-[#2997ff] border border-[#0071e3]/30">APPROVED</span>`;
+        } else if (item.status === 'DENIED') {
+          statusChip = `<span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-[#86868b]/15 text-[#86868b] border border-[#86868b]/30">DENIED</span>`;
+        } else {
+          statusChip = `<span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-[#ff9f0a]/15 text-[#ff9f0a] border border-[#ff9f0a]/30">${item.status}</span>`;
+        }
+
+        // Flags pills
+        const flagsHtml = (item.flags || []).map(f => `
+          <span class="px-2 py-0.5 bg-[#242426] border border-[#333336] rounded-pill text-[11px] text-[#86868b] font-mono">
+            ${f}
+          </span>
+        `).join('');
+
+        // Reason text
+        const reasonText = (item.reasons && item.reasons.length > 0)
+          ? item.reasons[item.reasons.length - 1].text
+          : 'Processed through spending guardrails.';
+
+        // Human Actions row for ESCALATED requests
+        let humanActions = '';
+        if (item.status === 'ESCALATED') {
+          humanActions = `
+            <div class="flex items-center gap-3 pt-3 border-t border-[#333336] mt-1" id="actions-${item.id}">
+              <button onclick="approveRequest('${item.id}')" class="bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs font-semibold h-[36px] px-5 rounded-pill border border-transparent transition-all shadow-[0_0_12px_rgba(0,113,227,0.35)] flex items-center gap-1.5">
+                <span>Approve</span>
+              </button>
+              <button onclick="denyRequest('${item.id}')" class="bg-transparent hover:bg-white/10 text-[#f5f5f7] border border-[#6e6e73] text-xs font-semibold h-[36px] px-5 rounded-pill transition-all">
+                <span>Deny</span>
+              </button>
+            </div>
+          `;
+        } else if (item.paypal_approval_url && item.status === 'APPROVED') {
+          // Orders v2 approval link
+          humanActions = `
+            <div class="pt-2">
+              <a href="${item.paypal_approval_url}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-[#2997ff] hover:underline font-semibold">
+                <span>Open PayPal Checkout</span> &rarr;
+              </a>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="text-2xl font-semibold text-white tracking-tight leading-none mb-1">
+                $${parseFloat(item.amount).toFixed(2)} <span class="text-sm font-normal text-[#86868b]">${item.currency}</span>
+              </div>
+              <div class="text-sm font-medium text-[#f5f5f7]">${item.merchant_name}</div>
+              <div class="text-xs text-[#86868b] font-mono">${item.payee_email} &bull; <span class="text-[#f5f5f7]">${item.merchant_category}</span></div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5">
+              ${decisionBadge}
+              ${statusChip}
+            </div>
+          </div>
+
+          <div class="bg-[#1d1d1f] border border-[#333336] rounded-xl p-3 text-xs leading-relaxed text-[#f5f5f7]">
+            ${reasonText}
+          </div>
+
+          ${item.page_excerpt ? `
+            <details class="group bg-[#111112] border border-[#2c2c2e] rounded-xl overflow-hidden text-xs">
+              <summary class="px-3.5 py-2 cursor-pointer flex items-center justify-between text-[#86868b] hover:text-[#f5f5f7] select-none font-medium">
+                <span class="flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 group-open:rotate-90 transition-transform text-[#2997ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                  What the agent read
+                  ${(item.flags || []).some(f => f.includes('prompt_injection')) ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-[#ff453a]/20 text-[#ff453a] font-bold border border-[#ff453a]/40">INJECTION FLAGGED</span>' : ''}
+                </span>
+                <span class="text-[11px] text-[#6e6e73] font-mono">${(item.page_excerpt || '').length} chars</span>
+              </summary>
+              <div class="p-3.5 border-t border-[#2c2c2e] bg-black font-mono text-[11px] leading-relaxed text-[#c7c7cc] whitespace-pre-wrap max-h-48 overflow-y-auto">
+                ${highlightInjectionText(item.page_excerpt)}
+              </div>
+            </details>
+          ` : ''}
+
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[11px] font-bold ${item.risk_score > 60 ? 'bg-[#ff453a]/20 text-[#ff453a]' : item.risk_score > 25 ? 'bg-[#ff9f0a]/20 text-[#ff9f0a]' : 'bg-[#30d158]/20 text-[#30d158]'}">
+                Risk ${item.risk_score}/100
+              </span>
+              ${flagsHtml}
+            </div>
+            <span class="text-[11px] text-[#6e6e73] font-mono">${new Date(item.created_at).toLocaleTimeString()}</span>
+          </div>
+
+          ${humanActions}
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    // Helper: Highlight prompt injection language in untrusted text
+    function highlightInjectionText(text) {
+      if (!text) return '<span class="text-[#86868b] italic">No page content recorded</span>';
+      let escaped = String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+      const patterns = [
+        /ignore\s+(previous|above|prior|all)\s+(instructions|prompts|rules|commands|constraints|task)/gi,
+        /ignore\s+(the\s+user&#039;s\s+task|the\s+user's\s+task|the\s+user)/gi,
+        /system\s+(notice|prompt|instructions|directive|override)/gi,
+        /(send|wire|transfer)\s+\$?\d+.*to/gi,
+        /\b(wire|transfer\s+funds)\b/gi,
+        /do\s*not\s+tell\s+(the\s+)?user/gi,
+        /don&#039;t\s+tell\s+(the\s+)?user/gi,
+        /don't\s+tell\s+(the\s+)?user/gi,
+        /do\s*not\s+mention\s+this/gi,
+        /\b(secret|confidential)\s+(payment|transfer|transaction)\b/gi,
+        /\b(urgent\s+payment|urgently\s+send|immediate(ly)?\s+transfer|immediately\s+send)\b/gi,
+        /attacker@evil-payments\.test/gi,
+        /\$500(\.00)?/gi
+      ];
+
+      patterns.forEach(regex => {
+        escaped = escaped.replace(regex, match => `<mark class="bg-[#ff453a]/25 text-[#ff453a] font-semibold px-1 py-0.5 rounded border border-[#ff453a]/40">${match}</mark>`);
+      });
+
+      return escaped;
+    }
+
+    // Demo Scenario Simulator Handlers
+    async function runDemoScenario(scenario) {
+      showToast(`Dispatching shopping agent (${scenario})...`);
+      try {
+        const res = await fetch(`/api/v1/demo/run/${scenario}`, { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Failed to start demo');
+        }
+        showToast(`Agent dispatched: ${scenario}`);
+        setTimeout(async () => {
+          await loadRequests();
+          await loadBudget();
+          await loadAudit();
+        }, 1200);
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function resetDemo() {
+      if (!confirm("Reset demo state? This will clear demo payment requests and reset weekly spend while recording a permanent audit block.")) {
+        return;
+      }
+      try {
+        const res = await fetch('/api/v1/demo/reset', { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Failed to reset demo');
+        }
+        showToast('Demo reset successfully');
+        await loadRequests();
+        await loadBudget();
+        await loadAudit();
+        await verifyAuditChain();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // 3. Human Actions: Approve and Deny
+    async function approveRequest(id) {
+      const actionsEl = document.getElementById(`actions-${id}`);
+      if (actionsEl) actionsEl.innerHTML = `<span class="text-xs text-[#2997ff] animate-pulse">Executing payout...</span>`;
+
+      try {
+        const res = await fetch(`/api/v1/requests/${id}/approve`, { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Failed to approve');
+        }
+        showToast('Payment Approved & Dispatched');
+        await loadRequests();
+        await loadBudget();
+        await loadAudit();
+      } catch (err) {
+        showToast(err.message, true);
+        await loadRequests();
+      }
+    }
+
+    async function denyRequest(id) {
+      const actionsEl = document.getElementById(`actions-${id}`);
+      if (actionsEl) actionsEl.innerHTML = `<span class="text-xs text-[#ff453a] animate-pulse">Denying request...</span>`;
+
+      try {
+        const res = await fetch(`/api/v1/requests/${id}/deny`, { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Failed to deny');
+        }
+        showToast('Payment Request Denied');
+        await loadRequests();
+        await loadAudit();
+      } catch (err) {
+        showToast(err.message, true);
+        await loadRequests();
+      }
+    }
+
+    // 4. Fetch and Save Rules
+    async function loadRules() {
+      try {
+        const res = await fetch('/api/v1/rules');
+        if (!res.ok) return;
+        rulesData = await res.json();
+
+        document.getElementById('rule-auto-limit').value = rulesData.per_txn_auto_limit;
+        document.getElementById('rule-hard-block').value = rulesData.hard_block_limit;
+        document.getElementById('rule-weekly-budget').value = rulesData.weekly_budget;
+        document.getElementById('rule-payees-input').value = (rulesData.allowed_payee_emails || []).join(', ');
+
+        renderCategoryToggles();
+      } catch (err) {
+        console.error('Failed to load rules:', err);
+      }
+    }
+
+    function renderCategoryToggles() {
+      const container = document.getElementById('allowed-categories-container');
+      container.innerHTML = '';
+      const allowed = new Set(rulesData.allowed_categories || []);
+
+      STANDARD_CATEGORIES.forEach(cat => {
+        const isChecked = allowed.has(cat);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `px-3 py-1 rounded-pill text-xs font-medium border transition-colors ${
+          isChecked 
+            ? 'bg-[#0071e3]/20 border-[#0071e3] text-white' 
+            : 'bg-[#1d1d1f] border-[#333336] text-[#86868b] hover:text-white'
+        }`;
+        btn.textContent = cat;
+        btn.onclick = () => {
+          if (allowed.has(cat)) allowed.delete(cat);
+          else allowed.add(cat);
+          rulesData.allowed_categories = Array.from(allowed);
+          renderCategoryToggles();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    document.getElementById('btn-save-rules').onclick = async function() {
+      if (isSavingRules) return;
+      isSavingRules = true;
+      this.textContent = 'Saving...';
+
+      try {
+        const autoLimit = parseFloat(document.getElementById('rule-auto-limit').value);
+        const hardBlock = parseFloat(document.getElementById('rule-hard-block').value);
+        const weeklyBudget = parseFloat(document.getElementById('rule-weekly-budget').value);
+        const payeesRaw = document.getElementById('rule-payees-input').value;
+        const payees = payeesRaw.split(',').map(s => s.strip ? s.strip() : s.trim()).filter(Boolean);
+
+        const payload = {
+          per_txn_auto_limit: autoLimit,
+          hard_block_limit: hardBlock,
+          weekly_budget: weeklyBudget,
+          unknown_payee_limit: rulesData.unknown_payee_limit || 0,
+          allowed_categories: rulesData.allowed_categories || [],
+          blocked_categories: rulesData.blocked_categories || [],
+          allowed_payee_emails: payees,
+          currency: rulesData.currency || 'USD'
+        };
+
+        const res = await fetch('/api/v1/rules', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Validation error');
+        }
+
+        rulesData = await res.json();
+        showToast('Spending Rules Updated');
+        await loadBudget();
+        await loadAudit();
+      } catch (err) {
+        showToast(err.message, true);
+      } finally {
+        isSavingRules = false;
+        this.textContent = 'Save changes';
+      }
+    };
+
+    // 5. AG Grid: Audit Log & Verification
+    async function initAuditGrid() {
+      const gridOptions = {
+        columnDefs: [
+          { headerName: 'Time', field: 'time', width: 140, sort: 'desc' },
+          { headerName: 'Actor', field: 'actor', width: 110, cellRenderer: params => {
+            return `<span class="font-semibold text-xs text-[#0066cc] uppercase">${params.value}</span>`;
+          }},
+          { headerName: 'Event', field: 'event', width: 220, cellRenderer: params => {
+            return `<span class="font-mono text-xs">${params.value}</span>`;
+          }},
+          { headerName: 'Request ID', field: 'request_id', width: 260, cellRenderer: params => {
+            return params.value ? `<span class="font-mono text-xs text-[#6e6e73]">${params.value}</span>` : '—';
+          }},
+          { headerName: 'SHA-256 Hash', field: 'short_hash', flex: 1, cellRenderer: params => {
+            return `<span class="font-mono text-xs text-[#1d1d1f] font-medium" title="${params.data.full_hash}">${params.value}</span>`;
+          }}
+        ],
+        defaultColDef: {
+          resizable: true,
+          sortable: true,
+          filter: true
+        },
+        rowData: [],
+        pagination: true,
+        paginationPageSize: 10
+      };
+
+      const gridDiv = document.getElementById('audit-grid');
+      auditGridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+      // Connect filter input
+      document.getElementById('audit-filter-input').addEventListener('input', e => {
+        if (auditGridApi) {
+          auditGridApi.setGridOption('quickFilterText', e.target.value);
+        }
+      });
+    }
+
+    async function loadAudit() {
+      try {
+        const res = await fetch('/api/v1/audit');
+        if (!res.ok) return;
+        const entries = await res.json();
+
+        const rows = entries.map(e => ({
+          time: new Date(e.ts).toLocaleTimeString(),
+          actor: e.actor,
+          event: e.event,
+          request_id: e.request_id || '',
+          short_hash: e.hash ? `${e.hash.substring(0, 10)}...${e.hash.substring(e.hash.length - 8)}` : 'genesis',
+          full_hash: e.hash || 'genesis'
+        }));
+
+        if (auditGridApi) {
+          auditGridApi.setGridOption('rowData', rows);
+        }
+      } catch (err) {
+        console.error('Failed to load audit entries:', err);
+      }
+    }
+
+    // Verify Hash Chain
+    async function verifyAuditChain() {
+      const badge = document.getElementById('chain-verify-badge');
+      try {
+        const res = await fetch('/api/v1/audit/verify');
+        if (!res.ok) throw new Error('Verification request failed');
+        const result = await res.json();
+
+        if (result.valid) {
+          badge.className = 'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-pill bg-[#30d158]/15 border border-[#30d158]/30 text-xs font-semibold text-[#074237] shadow-sm';
+          badge.innerHTML = `
+            <span class="w-2 h-2 rounded-full bg-[#30d158] shadow-[0_0_8px_#30d158]"></span>
+            <span>Chain Verified (${result.checked} blocks intact)</span>
+          `;
+        } else {
+          badge.className = 'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-pill bg-[#ff453a]/15 border border-[#ff453a]/30 text-xs font-semibold text-[#ff453a] shadow-sm';
+          badge.innerHTML = `
+            <span class="w-2 h-2 rounded-full bg-[#ff453a]"></span>
+            <span>Chain Broken at ID #${result.first_bad_id}</span>
+          `;
+        }
+      } catch (err) {
+        badge.innerHTML = `<span class="text-xs text-[#86868b]">Verification unavailable</span>`;
+      }
+    }
+
+    document.getElementById('btn-reverify-audit').onclick = verifyAuditChain;
+
+    // ==========================================================================
+    // PAYPAL MCP TOOLS DISCOVERY
+    // ==========================================================================
+    let mcpToolsData = [];
+
+    async function loadMCPTools() {
+      const pill = document.getElementById('mcp-status-pill');
+      const text = document.getElementById('mcp-status-text');
+      const countChip = document.getElementById('mcp-count-chip');
+      const list = document.getElementById('mcp-tools-list');
+
+      try {
+        const res = await fetch('/api/v1/mcp/tools');
+        if (!res.ok) throw new Error('Failed to fetch MCP tools');
+        const data = await res.json();
+
+        mcpToolsData = data.tools || [];
+        countChip.textContent = `${mcpToolsData.length}`;
+
+        if (data.mock) {
+          pill.className = 'flex items-center gap-1.5 px-3 py-1 rounded-pill bg-[#ff9f0a]/15 border border-[#ff9f0a]/30 text-[11px] text-[#ff9f0a]';
+          text.textContent = 'Mock Fallback';
+        } else {
+          pill.className = 'flex items-center gap-1.5 px-3 py-1 rounded-pill bg-[#30d158]/15 border border-[#30d158]/30 text-[11px] text-[#30d158]';
+          text.textContent = 'Sandbox Live';
+        }
+
+        renderMCPTools(mcpToolsData);
+      } catch (err) {
+        console.error('Failed to load MCP tools:', err);
+        pill.className = 'flex items-center gap-1.5 px-3 py-1 rounded-pill bg-[#ff453a]/15 border border-[#ff453a]/30 text-[11px] text-[#ff453a]';
+        text.textContent = 'Offline';
+        list.innerHTML = `
+          <div class="p-3 text-center text-xs text-[#86868b] bg-[#1d1d1f] rounded-xl border border-[#333336]">
+            Unable to connect to PayPal MCP server. Fallback to REST active.
+          </div>
+        `;
+      }
+    }
+
+    function renderMCPTools(tools) {
+      const list = document.getElementById('mcp-tools-list');
+      if (!list) return;
+      if (!tools || tools.length === 0) {
+        list.innerHTML = `
+          <div class="p-4 text-center text-xs text-[#86868b] bg-[#1d1d1f] rounded-xl border border-[#333336]">
+            No matching MCP tools found.
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = tools.map(t => {
+        const name = escapeHtml(t.name || 'unnamed_tool');
+        const desc = escapeHtml(t.description || 'No description provided.');
+        const isDisbursement = ['payout', 'payouts', 'disburse', 'send_money', 'pay_order'].some(k => name.toLowerCase().includes(k));
+        const badge = isDisbursement
+          ? `<span class="px-2 py-0.5 rounded-full bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30 text-[10px] font-mono">Restricted</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-[#0071e3]/15 text-[#2997ff] border border-[#0071e3]/30 text-[10px] font-mono">Read/Draft</span>`;
+
+        return `
+          <div class="p-3 bg-[#1d1d1f] rounded-xl border border-[#333336] hover:border-[#424245] transition-colors">
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <span class="font-mono text-xs font-semibold text-white truncate">${name}</span>
+              ${badge}
+            </div>
+            <p class="text-[11px] text-[#86868b] line-clamp-2 leading-relaxed">${desc}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const searchInput = document.getElementById('mcp-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const q = e.target.value.trim().toLowerCase();
+        if (!q) {
+          renderMCPTools(mcpToolsData);
+          return;
+        }
+        const filtered = mcpToolsData.filter(t => 
+          (t.name && t.name.toLowerCase().includes(q)) ||
+          (t.description && t.description.toLowerCase().includes(q))
+        );
+        renderMCPTools(filtered);
+      });
+    }
+
+    // ==========================================================================
+    // INITIALIZATION & 2-SECOND POLLING CYCLE
+    // ==========================================================================
+    async function init() {
+      await initAuditGrid();
+      await loadBudget();
+      await loadRules();
+      await loadRequests();
+      await loadAudit();
+      await verifyAuditChain();
+      await loadMCPTools();
+
+      // Poll every 2 seconds as specified
+      setInterval(async () => {
+        await loadRequests();
+        await loadBudget();
+      }, 2000);
+
+      // Audit poll every 6 seconds
+      setInterval(async () => {
+        await loadAudit();
+        await verifyAuditChain();
+      }, 6000);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
